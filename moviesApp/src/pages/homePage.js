@@ -1,24 +1,32 @@
-import React from "react";
-import Header from "../components/headerMovieList";
-import FilterCard from "../components/filterMoviesCard";
-import MovieList from "../components/movieList";
-import Grid from "@mui/material/Grid";
+import React, { useState, useEffect } from "react";
+import PageTemplate from "../components/templateMovieListPage";
+import { getMovies } from "../api/tmdb-api";
 
-const MovieListPage = (props) => {
-  const movies = props.movies;
+const HomePage = (props) => {
+  const [movies, setMovies] = useState([]);
+  const favourites = movies.filter((m) => m.favourite);
+  localStorage.setItem("favourites", JSON.stringify(favourites));
+
+  const addToFavourites = (movieId) => {
+    const updatedMovies = movies.map((m) =>
+      m.id === movieId ? { ...m, favourite: true } : m
+    );
+    setMovies(updatedMovies);
+  };
+
+  useEffect(() => {
+    getMovies().then(movies => {
+      setMovies(movies);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
-    <Grid container sx={{ padding: "20px" }}>
-      <Grid item xs={12}>
-        <Header title={"Home Page"} />
-      </Grid>
-      <Grid item container spacing={5}>
-        <Grid key="find" item xs={12} sm={6} md={4} lg={3} xl={2}>
-          <FilterCard />
-        </Grid>
-        <MovieList movies={movies}></MovieList>
-      </Grid>
-    </Grid>
+    <PageTemplate
+      title="Discover Movies"
+      movies={movies}
+      selectFavourite={addToFavourites}
+    />
   );
 };
-export default MovieListPage;
+export default HomePage;
